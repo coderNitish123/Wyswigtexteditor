@@ -9,18 +9,20 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@tiptap/extension-underline": "^2.2.4",
-    "@tiptap/pm": "^2.2.4",
-    "@tiptap/react": "^2.2.4",
-    "@tiptap/starter-kit": "^2.2.4",
+    "@fortawesome/free-solid-svg-icons": "^6.6.0",
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "@heroicons/react": "^2.1.5",
+    "draft-js": "^0.11.7",
     "lucide-react": "^0.338.0",
     "next": "14.1.0",
     "react": "^18",
     "react-dom": "^18",
+    "react-draft-wysiwyg": "^1.15.0",
     "react-responsive-masonry": "^2.2.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@types/draft-js": "^0.11.18",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

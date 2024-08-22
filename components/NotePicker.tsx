@@ -1,29 +1,41 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import Tiptap from './Tiptap'
-import { v4 as uuidv4 } from 'uuid'
+import React, { useState } from "react";
+import DraftEditorComponent from "./TextEditor";
+import { v4 as uuidv4 } from "uuid";
+import { convertFromRaw, convertToRaw } from "draft-js";
 
 const Todo = () => {
-  const [content, setContent] = useState<string>('')
-  const handleContentChange = (reason: any) => {
-    setContent(reason)
-  }
-  const handleSubmit = (e: any) => {
-    e.preventDefault()
-    const data = {
-      id: uuidv4(),
-      content: content,
+  const [content, setContent] = useState<string>("");
+
+  const handleContentChange = (newContent: string) => {
+    setContent(newContent);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const contentState = JSON.parse(content);
+      const plainText = convertFromRaw(contentState).getPlainText();
+
+      const data = {
+        id: uuidv4(),
+        content: plainText,
+      };
+
+      const existingDataString = localStorage.getItem("myData");
+      const existingData = existingDataString
+        ? JSON.parse(existingDataString)
+        : [];
+      const updatedData = [...existingData, data];
+      localStorage.setItem("myData", JSON.stringify(updatedData));
+      setContent(""); // Clear content
+    } catch (error) {
+      console.error("Error parsing content:", error);
     }
-    console.log(data)
-    const existingDataString = localStorage.getItem('myData')
-    const existingData = existingDataString
-      ? JSON.parse(existingDataString)
-      : []
-    const updatedData = [...existingData, data]
-    localStorage.setItem('myData', JSON.stringify(updatedData))
-    setContent('')
-  }
+  };
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -32,12 +44,15 @@ const Todo = () => {
       <div className="text-3xl text-center text-sky-300 mb-10">
         Notes Picker
       </div>
-      <Tiptap
-        content={content}
-        onChange={(newContent: string) => handleContentChange(newContent)}
-      />
+      <DraftEditorComponent content={content} onChange={handleContentChange} />
+      <button
+        type="submit"
+        className="px-4 bg-sky-700 text-white py-2 rounded-md mt-4"
+      >
+        Add
+      </button>
     </form>
-  )
-}
+  );
+};
 
-export default Todo
+export default Todo;

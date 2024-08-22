@@ -1,72 +1,146 @@
+/* Base styles for the entire application */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Root variables for consistent colors and themes */
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
 }
 
-.ProseMirror {
-  padding: 10px;
-  background: transparent;
-  border-radius: 0 0 5px 5px;
-  min-height: 100px;
+/* Style the editor container */
+.editor-container {
+  background-color: rgb(var(--background-end-rgb));
+  /* Background color */
+  border: 1px solid #e2e8f0;
+  /* Light border */
+  border-radius: 8px;
+  /* Rounded corners */
+  padding: 1rem;
+  /* Padding around the editor */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* Subtle shadow */
+  margin-top: 1rem;
+  /* Margin at the top */
 }
 
-.ProseMirror > * + * {
-  margin-top: 0.75em;
+/* Style the editor wrapper */
+.wrapper-class {
+  border: 1px solid #ddd;
+  /* Light border around the editor */
+  border-radius: 8px;
+  /* Rounded corners */
+  background-color: rgb(var(--background-end-rgb));
+  /* White background inside the editor */
 }
 
-.ProseMirror ul {
-  padding: 0 1rem;
-  list-style: disc !important;
-}
-.ProseMirror ol {
-  padding: 0 2rem;
-  list-style: decimal !important;
+/* Style the editor itself */
+.editor-class {
+  min-height: 200px;
+  /* Minimum height for the editor */
+  padding: 1rem;
+  /* Padding inside the editor */
+  background-color: rgb(var(--background-end-rgb));
+  /* White background inside the editor */
+  border-radius: 8px;
+  /* Rounded corners */
+  border: 1px solid #ddd;
+  /* Light border */
+  color: #333;
+  /* Text color */
+  font-size: 16px;
+  /* Font size */
 }
 
-.ProseMirror h1,
-.ProseMirror h2,
-.ProseMirror h3,
-.ProseMirror h4,
-.ProseMirror h5,
-.ProseMirror h6 {
-  line-height: 1.1;
+/* Styling for React Draft WYSIWYG */
+.rdw-editor-main {
+  border: 1px solid #d1d5db;
+  /* Border around the editor */
+  border-radius: 0.375rem;
+  /* Rounded corners */
+  background-color: rgb(var(--background-end-rgb));
+  /* Background color */
+  color: #333;
+  /* Text color */
 }
 
-.ProseMirror code {
-  background-color: rgba(#616161, 0.1);
+.rdw-editor-toolbar {
+  border-bottom: 1px solid #d1d5db;
+  /* Border below the toolbar */
+  background-color: #ffffff;
+  /* Toolbar background */
+}
+
+.rdw-option-wrapper {
+  cursor: pointer;
+  /* Pointer cursor for options */
+}
+
+/* Ensure text is visible in the editor */
+.public-DraftEditor-content {
+  color: #333;
+  /* Text color */
+  background-color: rgb(var(--background-end-rgb));
+  /* Background color */
+  padding: 1rem;
+  /* Padding */
+  min-height: 200px;
+  /* Minimum height for the editor content area */
+}
+
+/* Specific styling for different text elements */
+.public-DraftEditor-content h1,
+.public-DraftEditor-content h2,
+.public-DraftEditor-content h3,
+.public-DraftEditor-content h4,
+.public-DraftEditor-content h5,
+.public-DraftEditor-content h6 {
+  line-height: 1.2;
+  /* Line height for headings */
+  margin-bottom: 0.5rem;
+  /* Margin below headings */
+}
+
+.public-DraftEditor-content ul,
+.public-DraftEditor-content ol {
+  margin-left: 1.5rem;
+  /* Indentation for lists */
+}
+
+.public-DraftEditor-content code {
+  background-color: rgba(97, 97, 97, 0.1);
+  /* Background for code snippets */
   color: #616161;
+  /* Text color for code snippets */
 }
 
-.ProseMirror pre {
+.public-DraftEditor-content pre {
   background: #0d0d0d;
+  /* Background for preformatted text */
   color: #fff;
+  /* Text color for preformatted text */
   font-family: 'JetBrainsMono', monospace;
+  /* Font for preformatted text */
   padding: 0.75rem 1rem;
+  /* Padding */
   border-radius: 0.5rem;
-}
-.ProseMirror code {
-  color: inherit;
-  padding: 0;
-  background: none;
-  font-size: 0.8rem;
+  /* Rounded corners */
 }
 
-.ProseMirror blockquote {
+.public-DraftEditor-content blockquote {
   padding-left: 1rem;
+  /* Padding for blockquotes */
   border-left: 3px solid #999999;
+  /* Border on the left of blockquotes */
 }
 
-.ProseMirror hr {
+.public-DraftEditor-content hr {
   border: none;
+  /* Remove default border */
   border-top: 3px solid #999999;
+  /* Top border for horizontal rules */
   margin: 2rem 0;
-}
-
-.heading3 {
-  font-size: 15px;
+  /* Margin above and below horizontal rules */
 }
