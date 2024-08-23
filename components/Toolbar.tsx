@@ -1,25 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
-import { EditorState, RichUtils, ContentState } from "draft-js";
+import React, { useState, useRef } from "react";
+import {
+  EditorState,
+  RichUtils,
+  ContentState,
+  convertToRaw,
+  AtomicBlockUtils,
+} from "draft-js";
+import { Editor } from "draft-js";
+import "draft-js/dist/Draft.css";
+import { convertFromRaw } from "draft-js";
+// Import Draft.js base styles
+
 import {
   Bold,
   Italic,
   Underline,
   Strikethrough,
-  List,
   ListOrdered,
+  List,
   Heading2,
-  Quote,
-  Code,
-  Link,
-  Image,
   Video,
+  Link,
   PlusCircle,
-  Font,
-  TextColor,
-  Highlight,
-  CodeSnippet,
 } from "lucide-react";
 
 // Toolbar configuration (as provided)
@@ -41,32 +45,11 @@ const toolbar = {
   ],
   inline: {
     inDropdown: false,
-    options: [
-      "bold",
-      "italic",
-      "underline",
-      "strikethrough",
-      "monospace",
-      "superscript",
-      "subscript",
-    ],
+    options: ["bold", "italic", "underline", "strikethrough"],
   },
   blockType: {
     inDropdown: true,
-    options: ["Normal", "H1", "H2", "H3", "H4", "Blockquote", "Code"],
-  },
-  fontSize: {
-    options: [8, 9, 10, 12, 14, 16, 18, 24, 30, 36, 48, 60],
-  },
-  fontFamily: {
-    options: [
-      "Arial",
-      "Georgia",
-      "Impact",
-      "Tahoma",
-      "Times New Roman",
-      "Verdana",
-    ],
+    options: ["Normal", "H1", "H2", "H3", "Blockquote", "Code"],
   },
   list: {
     inDropdown: false,
@@ -98,20 +81,11 @@ const toolbar = {
       "rgb(163,143,132)",
       "rgb(239,239,239)",
       "rgb(255,255,255)",
-      "rgb(250,197,28)",
-      "rgb(243,121,52)",
-      "rgb(209,72,65)",
-      "rgb(184,49,47)",
-      "rgb(124,112,107)",
-      "rgb(209,213,216)",
     ],
   },
   link: {
     options: ["link", "unlink"],
     defaultTargetOption: "_self",
-  },
-  embedded: {
-    defaultSize: { height: "auto", width: "auto" },
   },
   image: {
     urlEnabled: true,
@@ -130,7 +104,7 @@ type Props = {
 const Toolbar = ({ editorState, setEditorState }: Props) => {
   const [fontType, setFontType] = useState<string>("");
   const [textColor, setTextColor] = useState<string>("#000000");
-  const [highlightColor, setHighlightColor] = useState<string>("#FFFF00");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Handlers for text formatting, block styles, and custom actions
   const handleToggle = (style: string) => {
@@ -142,7 +116,7 @@ const Toolbar = ({ editorState, setEditorState }: Props) => {
   };
 
   const handleAddContent = () => {
-    const currentContent = editorState.getCurrentContent();
+    const contentState = editorState.getCurrentContent();
     const newContentState = ContentState.createFromText("Your Text Here");
     const newEditorState = EditorState.push(
       editorState,
@@ -152,8 +126,71 @@ const Toolbar = ({ editorState, setEditorState }: Props) => {
     setEditorState(newEditorState);
   };
 
-  const handleAddImage = () => {
-    alert("Image upload functionality not implemented");
+  const handleAddImageFromInput = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const url = e.target?.result as string;
+        if (url) {
+          const contentState = editorState.getCurrentContent();
+          const contentStateWithEntity = contentState.createEntity(
+            "IMAGE",
+            "IMMUTABLE",
+            { src: url }
+          );
+          const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+          const newEditorState = EditorState.set(editorState, {
+            currentContent: contentStateWithEntity,
+          });
+          setEditorState(
+            AtomicBlockUtils.insertAtomicBlock(newEditorState, entityKey, " ")
+          );
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // Render block function for atomic blocks (like images and videos)
+  const blockRendererFn = (contentBlock: any) => {
+    const type = contentBlock.getType();
+    if (type === "atomic") {
+      return {
+        component: MediaBlockRenderer,
+        editable: false,
+      };
+    }
+    return null;
+  };
+
+  // Media block renderer component to render images and videos
+  const MediaBlockRenderer = (props: any) => {
+    const contentState = editorState.getCurrentContent();
+    const entity = contentState.getEntity(props.block.getEntityAt(0));
+    const { src } = entity.getData();
+    const type = entity.getType();
+
+    return (
+      <div className="my-4">
+        {type === "IMAGE" && (
+          <img src={src} alt="Inserted image" style={{ maxWidth: "100%" }} />
+        )}
+        {type === "VIDEO" && (
+          <div className="video-container">
+            <video controls src={src} style={{ maxWidth: "100%" }} />
+          </div>
+        )}
+      </div>
+    );
   };
 
   const handleAddVideo = () => {
@@ -174,10 +211,6 @@ const Toolbar = ({ editorState, setEditorState }: Props) => {
 
   const handleTextColorChange = (color: string) => {
     setTextColor(color);
-  };
-
-  const handleHighlightChange = (color: string) => {
-    setHighlightColor(color);
   };
 
   return (
@@ -235,16 +268,6 @@ const Toolbar = ({ editorState, setEditorState }: Props) => {
           <Heading2 className="w-5 h-5" />
         </button>
         <button
-          onClick={() => handleBlockToggle("header-three")}
-          className={`p-2 rounded-lg ${
-            RichUtils.getCurrentBlockType(editorState) === "header-three"
-              ? "bg-sky-700 text-white"
-              : "text-sky-400"
-          }`}
-        >
-          <Heading2 className="w-5 h-5" />
-        </button>
-        <button
           onClick={() => handleBlockToggle("ordered-list-item")}
           className={`p-2 rounded-lg ${
             RichUtils.getCurrentBlockType(editorState) === "ordered-list-item"
@@ -265,10 +288,17 @@ const Toolbar = ({ editorState, setEditorState }: Props) => {
           <List className="w-5 h-5" />
         </button>
         <button
-          onClick={handleAddImage}
+          onClick={triggerFileInput}
           className="p-2 rounded-lg text-sky-400"
         >
-          <Image className="w-5 h-5" />
+          <PlusCircle className="w-5 h-5" />
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={handleAddImageFromInput}
+          />
         </button>
         <button
           onClick={handleAddVideo}
@@ -285,49 +315,6 @@ const Toolbar = ({ editorState, setEditorState }: Props) => {
         <button onClick={handleAddLink} className="p-2 rounded-lg text-sky-400">
           <Link className="w-5 h-5" />
         </button>
-        <button
-          onClick={handleAddContent}
-          className="p-2 rounded-lg text-sky-400"
-        >
-          <Code className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Font Type Dropdown */}
-      <div className="flex items-center">
-        <select
-          value={fontType}
-          onChange={(e) => handleFontChange(e.target.value)}
-          className="p-2 border border-gray-300 rounded-lg"
-        >
-          <option value="">Font</option>
-          <option value="Arial">Arial</option>
-          <option value="Georgia">Georgia</option>
-          <option value="Impact">Impact</option>
-          <option value="Tahoma">Tahoma</option>
-          <option value="Times New Roman">Times New Roman</option>
-          <option value="Verdana">Verdana</option>
-        </select>
-      </div>
-
-      {/* Text Color Picker */}
-      <div className="flex items-center">
-        <input
-          type="color"
-          value={textColor}
-          onChange={(e) => handleTextColorChange(e.target.value)}
-          className="w-8 h-8 p-0 m-0 border-0"
-        />
-      </div>
-
-      {/* Highlight Color Picker */}
-      <div className="flex items-center">
-        <input
-          type="color"
-          value={highlightColor}
-          onChange={(e) => handleHighlightChange(e.target.value)}
-          className="w-8 h-8 p-0 m-0 border-0"
-        />
       </div>
     </div>
   );
